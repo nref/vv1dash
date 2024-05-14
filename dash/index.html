@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VV1 Dashboard</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="apple-touch-icon" sizes="180x180" href="/assets/favicon/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="assets/favicon//favicon-16x16.png">
+    <link rel="manifest" href="/assets/favicon/site.webmanifest">
+</head>
+<body>
+    <h1>VV1 Dashboard</h1>
+    <div class="button-controls">
+        <button id="play-button">Play</button>
+        <button id="pause-button">Pause</button>
+        <select id="speed-select">
+            <option value="100">0.1s</option>
+            <option value="1000">1s</option>
+            <option value="5000">5s</option>
+        </select>
+        <button id="prev-button">Previous</button>
+        <button id="next-button">Next</button>
+    </div>
+    <div class="slider-controls">
+        <input type="range" id="photo-slider" min="0" value="0" step="1">
+        <label for="photo-slider" id="slider-label">Latest</label>
+    </div>
+    <div id="photo-container">
+        <img id="photo" src="" alt="No Image Loaded" />
+    </div>
+    <script src="app.js"></script>
+</body>
+</html>

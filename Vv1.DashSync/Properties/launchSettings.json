@@ -1,0 +1,12 @@
+{
+  "profiles": {
+    "WSL": {
+      "commandName": "WSL2",
+      "distributionName": ""
+    },
+    "Sync to dash": {
+      "commandName": "Project",
+      "commandLineArgs": "F:\\repos\\vv1\\dash\\assets"
+    }
+  }
+}
