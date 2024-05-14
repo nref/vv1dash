@@ -9,7 +9,6 @@ fetch('assets/index.json')
         imageList = data;
         maxIndex = imageList.length - 1;
         document.getElementById('photo-slider').max = maxIndex;
-        document.getElementById('photo-slider').max = imageList.length - 1;
         prefetchImages(imageList).then(() => {
             console.log('All images prefetched!');
         }).catch(error => {
