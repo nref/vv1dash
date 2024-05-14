@@ -1,18 +1,21 @@
 let imageList = [];
 let intervalId = null;
+let maxIndex = 0;
 
 // Load images from JSON file
 fetch('assets/index.json')
     .then(response => response.json())
     .then(data => {
         imageList = data;
+        maxIndex = imageList.length - 1;
+        document.getElementById('photo-slider').max = maxIndex;
         document.getElementById('photo-slider').max = imageList.length - 1;
         prefetchImages(imageList).then(() => {
             console.log('All images prefetched!');
         }).catch(error => {
             console.error('Error prefetching images:', error);
         });
-        updateImage(0); // Load the first image initially
+        updateImage(maxIndex); // Load the latest image initially (rightmost position)
         toggleButtons(); // Initially disable the pause button
     })
     .catch(error => console.error('Error loading the photos:', error));
@@ -83,8 +86,13 @@ function changeImage(direction) {
 function playSlideShow() {
     const interval = parseInt(document.getElementById('speed-select').value);
     clearInterval(intervalId); // Clear existing interval to reset the speed
+    const slider = document.getElementById('photo-slider');
+
+    if (slider.value == maxIndex) {
+        slider.value = 0;
+    }
+
     intervalId = setInterval(() => {
-        const slider = document.getElementById('photo-slider');
         if (slider.value < imageList.length - 1) {
             changeImage(1);
         } else {
