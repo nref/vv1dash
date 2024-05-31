@@ -8,7 +8,7 @@ let intervalId = null; // For slideshow timing
 
 let downloadQueue = []; // List of currently running promises for image downloads
 let activeDownloads = 0;
-const maxConcurrentDownloads = 1;
+const maxConcurrentDownloads = 3;
 
 const slider = document.getElementById('photo-slider');
 const sliderLabel = document.getElementById('slider-label');
