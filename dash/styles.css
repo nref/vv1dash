@@ -5,7 +5,7 @@ body {
 }
 
 #photo-container {
-    width: 80%;
+    width: 100%;
     height: auto;
     margin: auto;
     display: flex;
@@ -13,13 +13,13 @@ body {
     padding: 20px 0; /* Added padding for better spacing */
 }
 
-#photo {
-    max-width: 100%;
+#photo-canvas {
+    width: 100%;
     height: auto;
 }
 
 .button-controls, .slider-controls {
-    width: 90%;
+    width: 100%;
     margin: 10px auto;  /* Centers the controls and adds spacing between them */
     display: flex;
     justify-content: center;
