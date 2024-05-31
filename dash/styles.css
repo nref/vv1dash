@@ -1,6 +1,6 @@
 body {
-    background-color: #333; /* Dark background for the entire page */
-    color: #fff; /* Light text color for better visibility on dark background */
+    background-color: transparent; 
+    color: #000000;
     font-family: Arial, sans-serif; /* Optional: setting a default font */
 }
 
@@ -10,7 +10,6 @@ body {
     margin: auto;
     display: flex;
     justify-content: center;
-    padding: 20px 0; /* Added padding for better spacing */
 }
 
 #photo-canvas {
