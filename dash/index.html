@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>VV1 Dashboard</title>
     <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
     <link rel="apple-touch-icon" sizes="180x180" href="/favicon/apple-touch-icon.png">
     <link rel="icon" type="image/png" sizes="32x32" href="/favicon/favicon-32x32.png">
     <link rel="icon" type="image/png" sizes="16x16" href="favicon//favicon-16x16.png">
@@ -12,15 +13,15 @@
 </head>
 <body>
     <div class="button-controls">
-        <button id="play-button">⏩︎</button>
-        <button id="pause-button">⏸︎</button>
+        <button id="play-button" class="fa fa-play"></button>
+        <button id="pause-button" class="fa fa-pause"></button>
         <select id="speed-select">
             <option value="100">0.1s</option>
             <option value="1000">1s</option>
             <option value="5000">5s</option>
         </select>
-        <button id="prev-button">⏴︎</button>
-        <button id="next-button">⏵︎</button>
+        <button id="prev-button" class="fa fa-angle-left"></button>
+        <button id="next-button" class="fa fa-angle-right"></button>
     </div>
     <div class="slider-controls">
         <input type="range" id="photo-slider" min="0" value="0" step="1">
