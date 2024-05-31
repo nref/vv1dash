@@ -1,3 +1,4 @@
+let images = {}; // Downloaded images, keyed by index
 let imagePaths = []; // Relative URL to images e.g. ["assets/2024-05-30.png", ...]
 let imageQueue = []; // Image indices, sorted by proximity to the slider position. 
 let maxIndex = 0;    // Max slider position
@@ -6,9 +7,12 @@ let requestedIndex = 0; // Current slider position
 
 let intervalId = null; // For slideshow timing
 
-let downloadQueue = []; // List of currently running promises for image downloads
-let activeDownloads = 0;
-const maxConcurrentDownloads = 3;
+let downloadPromises = {}; // Currently running promises for image downloads, keyed on index
+let abortControllers = {}; // To store AbortController for each download
+
+let inflightDownloadCount = 0; // Number of inflight GET requests
+
+const maxConcurrentDownloads = 10; // Allow this many inflight GET requests
 
 const slider = document.getElementById('photo-slider');
 const sliderLabel = document.getElementById('slider-label');
@@ -21,12 +25,14 @@ const prevButton = document.getElementById('prev-button')
 const nextButton = document.getElementById('next-button')
 const speedSelect = document.getElementById('speed-select');
 
-slider.addEventListener('input', () => {
+const handleSliderChanged = () => {
     const index = parseInt(slider.value);
-
     prioritizeNear(index);
     scheduleUpdateImage(index);
-});
+};
+
+slider.addEventListener('input', handleSliderChanged);
+slider.addEventListener('change', handleSliderChanged);
 
 prevButton.addEventListener('click', () => {
     changeImage(-1);
@@ -58,12 +64,13 @@ fetch('assets/index.json')
     .then(data => {
         imagePaths = data;
         imageQueue = createImageQueue(imagePaths.length);
-        images = new Array(imagePaths.length).fill(null);
 
         // Start slider at the most recent image
         maxIndex = imagePaths.length - 1;
         slider.max = maxIndex;
         slider.value = maxIndex; 
+
+        // Kick off downloading, starting from the end
         prioritizeNear(maxIndex);
 
         toggleButtons(); // Initially disable the pause button
@@ -78,60 +85,80 @@ function createImageQueue(length) {
     return indices;
 }
 
-function enqueueDownloads(imageQueue) {
-    while (downloadQueue.length < maxConcurrentDownloads && imageQueue.length > 0) {
-        const index = imageQueue.shift();
-        downloadQueue.push(downloadImage(index));
-    }
-}
-
-function dequeueDownload() {
-    downloadQueue.shift();
+function downloadNext() {
     enqueueDownloads(imageQueue);
 }
 
+function enqueueDownloads(imageQueue) {
+    while (Object.keys(downloadPromises).length < maxConcurrentDownloads && imageQueue.length > 0) {
+        const index = imageQueue.shift();
+        downloadPromises[index] = downloadImage(index);
+    }
+}
+
 function downloadImage(index) {
-    if (images[index] !== null) { return; }
+    if (index in images) { return; } // Already downlaod
 
-    activeDownloads++;
     const imageUrl = `assets/${imagePaths[index]}`;
-    return new Promise((resolve, reject) => {
-        const img = new Image();
 
-        img.onload = () => {
-            images[index] = img;
-            activeDownloads--;
+    inflightDownloadCount++;
+    const controller = new AbortController();
+    abortControllers[index] = controller;
+
+    return fetch(imageUrl, { signal: controller.signal })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`Failed to fetch image at ${imageUrl}`);
+            }
+            return response.blob();
+        })
+        .then(blob => createImageBitmap(blob))
+        .then(imgBitmap => {
+            images[index] = imgBitmap;
+
+            inflightDownloadCount--;
+            delete downloadPromises[index];
+            delete abortControllers[index];
 
             // Show the image the slider position soon as it downloads
-            const shouldShow = index === requestedIndex
+            const shouldShow = index === requestedIndex;
 
             if (shouldShow) {
-                updateImage(index);
+                scheduleUpdateImage(index);
             }
 
-            // Start next download
-            dequeueDownload();
-        };
+            downloadNext(); // Start the next download
+        })
+        .catch(error => {
+            if (error.name !== 'AbortError') {
+                console.error(error);
+            }
 
-        img.onerror = () => {
-            activeDownloads--;
-            reject(new Error(`Failed to load image at ${imageUrl}`));
+            inflightDownloadCount--;
+            delete downloadPromises[index];
+            delete abortControllers[index];
 
-            // Start next download
-            dequeueDownload();
-        };
-
-        img.src = imageUrl; // Does the download
-    });
+            imageQueue.push(index); // Put back on the queue for later download
+            downloadNext(); // Start the next download
+        });
 }
 
 function prioritizeNear(index) {
 
     requestedIndex = index;
-    if (imageQueue.length > 0) {
-        imageQueue = reprioritize(imageQueue, index);
-        enqueueDownloads(imageQueue);
+
+    if (index in images) { return; } // Already downloaded
+
+    // Cancel in-flight requests 
+    for (const key in abortControllers) {
+        if (key in downloadPromises) { continue; } // Will download soon
+
+        abortControllers[key].abort();
+        delete abortControllers[key];
     }
+
+    imageQueue = reprioritize(imageQueue, index);
+    downloadNext();
 }
 
 // Sort the image indices by their distance to the slider position.
@@ -159,7 +186,6 @@ function scheduleUpdateImage(index) {
 
 function updateImage(index) {
     const img = images[index];
-
     if (img == null) { return; }
    
     // Clear canvas and draw the new image
